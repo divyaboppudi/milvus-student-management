@@ -102,6 +102,21 @@ from milvus_student_management.infrastructure.ai.tools.parent_tool import (
 from milvus_student_management.infrastructure.ai.agents.student_agent import (
     StudentAgent,
 )
+from milvus_student_management.infrastructure.ai.agents.teacher_agent import (
+    TeacherAgent,
+)
+
+from milvus_student_management.infrastructure.ai.agents.parent_agent import (
+    ParentAgent,
+)
+
+from milvus_student_management.infrastructure.ai.agents.relationship_agent import (
+    RelationshipAgent,
+)
+
+from milvus_student_management.infrastructure.ai.tools.teacher_tool import (
+    TeacherTool,
+)
 
 app = FastAPI(
     title="Milvus Student Management API",
@@ -142,8 +157,46 @@ relationship_service = RelationshipService(
 )
 ai_service = AIService()
 
+student_tool = StudentTool(
+    student_service
+)
+
+teacher_tool = TeacherTool(
+    teacher_service
+)
+
+parent_tool = ParentTool(
+    parent_service
+)
+
+relationship_tool = RelationshipTool(
+    relationship_service
+)
+
+student_agent = StudentAgent(
+    student_tool,
+    relationship_tool,
+    parent_tool,
+)
+
+teacher_agent = TeacherAgent(
+    teacher_tool
+)
+
+parent_agent = ParentAgent(
+    parent_tool
+)
+
+relationship_agent = RelationshipAgent(
+    relationship_tool
+)
+
 agent_service = AgentService(
-    ai_service
+    ai_service,
+    student_agent,
+    teacher_agent,
+    parent_agent,
+    relationship_agent,
 )
 
 @app.get(

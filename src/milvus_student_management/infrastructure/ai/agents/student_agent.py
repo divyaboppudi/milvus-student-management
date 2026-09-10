@@ -31,6 +31,17 @@ class StudentAgent:
             parent_tool
         )
 
+    def get_student_details(
+        self,
+        student_id: str,
+    ):
+
+        return (
+            self.student_tool.get_student(
+                student_id
+            )
+        )
+
     def get_student_context(
         self,
         student_id: str,
