@@ -79,6 +79,29 @@ from milvus_student_management.infrastructure.repositories.relationship_reposito
 from milvus_student_management.application.services.ai_service import (
     AIService,
 )
+from milvus_student_management.api.models.agent_request import (
+    AgentRequest,
+)
+
+from milvus_student_management.application.services.agent_service import (
+    AgentService,
+)
+
+from milvus_student_management.infrastructure.ai.tools.student_tool import (
+    StudentTool,
+)
+
+from milvus_student_management.infrastructure.ai.tools.relationship_tool import (
+    RelationshipTool,
+)
+
+from milvus_student_management.infrastructure.ai.tools.parent_tool import (
+    ParentTool,
+)
+
+from milvus_student_management.infrastructure.ai.agents.student_agent import (
+    StudentAgent,
+)
 
 app = FastAPI(
     title="Milvus Student Management API",
@@ -119,6 +142,9 @@ relationship_service = RelationshipService(
 )
 ai_service = AIService()
 
+agent_service = AgentService(
+    ai_service
+)
 
 @app.get(
     "/",
@@ -1093,3 +1119,92 @@ async def get_parent_summary(
         "summary":
         summary,
     }
+@app.get(
+    "/relationships/{relationship_id}/summary",
+    tags=["AI"],
+)
+async def get_relationship_summary(
+    relationship_id: str,
+):
+
+    relationship = (
+        relationship_service.get_relationship(
+            relationship_id
+        )
+    )
+
+    if not relationship:
+        return {
+            "message":
+            "Relationship not found"
+        }
+
+    payload = (
+        relationship["payload"]
+    )
+
+    summary = (
+        await ai_service.generate_relationship_summary(
+            payload
+        )
+    )
+
+    return {
+        "relationship_id":
+        payload["id"],
+        "summary":
+        summary,
+    }
+@app.post(
+    "/ai/chat",
+    tags=["AI"],
+)
+async def chat(
+    request: AgentRequest,
+):
+
+    response = (
+        await agent_service.ask(
+            request.question
+        )
+    )
+
+    return {
+        "question":
+        request.question,
+        "response":
+        response,
+    }
+@app.get(
+    "/ai/student-context/{student_id}",
+    tags=["AI"],
+)
+def get_student_context(
+    student_id: str,
+):
+
+    student_tool = StudentTool(
+        student_service
+    )
+
+    relationship_tool = (
+        RelationshipTool(
+            relationship_service
+        )
+    )
+
+    parent_tool = ParentTool(
+        parent_service
+    )
+
+    student_agent = StudentAgent(
+        student_tool,
+        relationship_tool,
+        parent_tool,
+    )
+
+    return (
+        student_agent.get_student_context(
+            student_id
+        )
+    )

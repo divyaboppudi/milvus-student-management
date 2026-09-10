@@ -14,13 +14,15 @@ from milvus_student_management.infrastructure.ai.prompts.parent_summary_prompt i
     build_parent_summary_prompt,
 )
 
+from milvus_student_management.infrastructure.ai.prompts.relationship_summary_prompt import (
+    build_relationship_summary_prompt,
+)
+
 
 class AIService:
 
     def __init__(self):
-        self.provider = (
-            ProviderFactory.create()
-        )
+        self.provider = ProviderFactory.create()
 
     async def generate_text(
         self,
@@ -34,11 +36,8 @@ class AIService:
         self,
         student: dict,
     ) -> str:
-
-        prompt = (
-            build_student_summary_prompt(
-                student
-            )
+        prompt = build_student_summary_prompt(
+            student
         )
 
         return await self.provider.generate(
@@ -49,11 +48,8 @@ class AIService:
         self,
         teacher: dict,
     ) -> str:
-
-        prompt = (
-            build_teacher_summary_prompt(
-                teacher
-            )
+        prompt = build_teacher_summary_prompt(
+            teacher
         )
 
         return await self.provider.generate(
@@ -64,10 +60,21 @@ class AIService:
         self,
         parent: dict,
     ) -> str:
+        prompt = build_parent_summary_prompt(
+            parent
+        )
 
+        return await self.provider.generate(
+            prompt
+        )
+
+    async def generate_relationship_summary(
+        self,
+        relationship: dict,
+    ) -> str:
         prompt = (
-            build_parent_summary_prompt(
-                parent
+            build_relationship_summary_prompt(
+                relationship
             )
         )
 
