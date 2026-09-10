@@ -40,6 +40,15 @@ class RelationshipService:
 
         return self.repository.get_all()
 
+    def get_relationship(
+        self,
+        relationship_id: str,
+    ):
+
+        return self.repository.get_relationship_by_id(
+            relationship_id
+        )
+
     def get_teacher_students(
         self,
         teacher_id: str,
@@ -56,4 +65,13 @@ class RelationshipService:
 
         return self.repository.get_parent_students(
             parent_id
+        )
+
+    def get_student_relationships(
+        self,
+        student_id: str,
+    ):
+
+        return self.repository.get_relationships_by_target(
+            student_id
         )

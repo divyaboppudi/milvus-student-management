@@ -5,7 +5,7 @@ from milvus_student_management.infrastructure.embeddings.embedding_provider impo
     EmbeddingProvider,
 )
 from milvus_student_management.shared.constants import (
-    EDUCATION_ENTITIES_COLLECTION,
+    TEACHERS_COLLECTION,
 )
 
 
@@ -13,7 +13,7 @@ class TeacherRepository:
 
     def __init__(self):
         self.collection = Collection(
-            EDUCATION_ENTITIES_COLLECTION
+            TEACHERS_COLLECTION
         )
         self.embedding_provider = EmbeddingProvider()
 
@@ -72,14 +72,33 @@ class TeacherRepository:
 
         self.collection.load()
 
-        return self.collection.query(
-            expr='entity_type == "teacher"',
+        results = self.collection.query(
+            expr='id != ""',
             output_fields=[
                 "id",
                 "entity_type",
                 "payload",
             ],
         )
+
+        active_teachers = []
+
+        for result in results:
+
+            payload = result.get(
+                "payload",
+                {}
+            )
+
+            if not payload.get(
+                "is_deleted",
+                False
+            ):
+                active_teachers.append(
+                    result
+                )
+
+        return active_teachers
 
     def update(
         self,

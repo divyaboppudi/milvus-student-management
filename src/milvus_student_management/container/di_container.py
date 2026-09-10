@@ -13,6 +13,9 @@ from milvus_student_management.application.services.parent_service import (
 from milvus_student_management.application.services.relationship_service import (
     RelationshipService,
 )
+from milvus_student_management.application.services.ai_service import (
+    AIService,
+)
 
 from milvus_student_management.infrastructure.repositories.student_repository import (
     StudentRepository,
@@ -64,4 +67,8 @@ class Container(containers.DeclarativeContainer):
     relationship_service = providers.Factory(
         RelationshipService,
         repository=relationship_repository,
+    )
+
+    ai_service = providers.Factory(
+        AIService,
     )

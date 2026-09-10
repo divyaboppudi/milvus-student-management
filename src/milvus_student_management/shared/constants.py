@@ -2,12 +2,20 @@
 # Collection Names
 # ==========================================
 
-EDUCATION_ENTITIES_COLLECTION = (
-    "education_entities"
+STUDENTS_COLLECTION = (
+    "students"
 )
 
-EDUCATION_RELATIONSHIPS_COLLECTION = (
-    "education_relationships"
+TEACHERS_COLLECTION = (
+    "teachers"
+)
+
+PARENTS_COLLECTION = (
+    "parents"
+)
+
+RELATIONSHIPS_COLLECTION = (
+    "relationships"
 )
 
 # ==========================================

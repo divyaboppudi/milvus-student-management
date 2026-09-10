@@ -37,7 +37,26 @@ class TeacherService:
         self,
         teacher_id: str,
     ):
-        return self.repository.delete(teacher_id)
+        teacher_record = (
+            self.repository.get_by_id(
+                teacher_id
+            )
+        )
+
+        if not teacher_record:
+            return False
+
+        payload = teacher_record["payload"]
+
+        teacher = Teacher(
+            **payload
+        )
+
+        teacher.is_deleted = True
+
+        return self.repository.update(
+            teacher
+        )
 
     def search_teachers(
         self,

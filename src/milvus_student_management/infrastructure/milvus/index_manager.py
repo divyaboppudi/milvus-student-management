@@ -1,8 +1,10 @@
 from pymilvus import Collection
 
 from milvus_student_management.shared.constants import (
-    EDUCATION_ENTITIES_COLLECTION,
-    EDUCATION_RELATIONSHIPS_COLLECTION,
+    STUDENTS_COLLECTION,
+    TEACHERS_COLLECTION,
+    PARENTS_COLLECTION,
+    RELATIONSHIPS_COLLECTION,
 )
 
 
@@ -20,26 +22,23 @@ class IndexManager:
             },
         }
 
-        entity_collection = Collection(
-            EDUCATION_ENTITIES_COLLECTION
-        )
+        collections = [
+            STUDENTS_COLLECTION,
+            TEACHERS_COLLECTION,
+            PARENTS_COLLECTION,
+            RELATIONSHIPS_COLLECTION,
+        ]
 
-        try:
-            entity_collection.create_index(
-                field_name="embedding",
-                index_params=index_params,
+        for collection_name in collections:
+
+            collection = Collection(
+                collection_name
             )
-        except Exception:
-            pass
 
-        relationship_collection = Collection(
-            EDUCATION_RELATIONSHIPS_COLLECTION
-        )
-
-        try:
-            relationship_collection.create_index(
-                field_name="embedding",
-                index_params=index_params,
-            )
-        except Exception:
-            pass
+            try:
+                collection.create_index(
+                    field_name="embedding",
+                    index_params=index_params,
+                )
+            except Exception:
+                pass

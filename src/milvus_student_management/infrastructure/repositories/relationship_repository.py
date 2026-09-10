@@ -5,7 +5,7 @@ from milvus_student_management.domain.entities.relationship import (
 )
 
 from milvus_student_management.shared.constants import (
-    EDUCATION_RELATIONSHIPS_COLLECTION,
+    RELATIONSHIPS_COLLECTION,
     VECTOR_DIMENSION,
 )
 
@@ -14,7 +14,7 @@ class RelationshipRepository:
 
     def __init__(self):
         self.collection = Collection(
-            EDUCATION_RELATIONSHIPS_COLLECTION
+            RELATIONSHIPS_COLLECTION
         )
 
     def create_relationship(

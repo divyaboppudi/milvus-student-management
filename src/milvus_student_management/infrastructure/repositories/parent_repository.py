@@ -5,30 +5,28 @@ from milvus_student_management.infrastructure.embeddings.embedding_provider impo
     EmbeddingProvider,
 )
 from milvus_student_management.shared.constants import (
-    EDUCATION_ENTITIES_COLLECTION,
+    PARENTS_COLLECTION,
 )
 
 
 class ParentRepository:
 
-    def __init__(self) -> None:
-
+    def __init__(self):
         self.collection = Collection(
-            EDUCATION_ENTITIES_COLLECTION
+            PARENTS_COLLECTION
         )
-
-        self.embedding_provider = (
-            EmbeddingProvider()
-        )
+        self.embedding_provider = EmbeddingProvider()
 
     def create(
         self,
         parent: Parent,
-    ) -> str:
+    ):
 
         text = (
-            f"Parent Name: {parent.name}. "
-            f"Phone Number: {parent.phone_number}"
+            self.embedding_provider.create_parent_text(
+                parent.name,
+                parent.phone_number,
+            )
         )
 
         embedding = (
@@ -51,7 +49,7 @@ class ParentRepository:
     def get_by_id(
         self,
         parent_id: str,
-    ) -> dict | None:
+    ):
 
         self.collection.load()
 
@@ -69,12 +67,12 @@ class ParentRepository:
 
         return result[0]
 
-    def get_all(self) -> list:
+    def get_all(self):
 
         self.collection.load()
 
-        return self.collection.query(
-            expr='entity_type == "parent"',
+        results = self.collection.query(
+            expr='id != ""',
             output_fields=[
                 "id",
                 "entity_type",
@@ -82,13 +80,31 @@ class ParentRepository:
             ],
         )
 
+        active_parents = []
+
+        for result in results:
+
+            payload = result.get(
+                "payload",
+                {}
+            )
+
+            if not payload.get(
+                "is_deleted",
+                False
+            ):
+                active_parents.append(
+                    result
+                )
+
+        return active_parents
+
     def update(
         self,
         parent: Parent,
-    ) -> bool:
+    ):
 
         self.delete(parent.id)
-
         self.create(parent)
 
         return True
@@ -96,7 +112,7 @@ class ParentRepository:
     def delete(
         self,
         parent_id: str,
-    ) -> bool:
+    ):
 
         self.collection.delete(
             expr=f'id == "{parent_id}"'
@@ -108,7 +124,7 @@ class ParentRepository:
         self,
         query: str,
         top_k: int = 10,
-    ) -> list:
+    ):
 
         self.collection.load()
 
@@ -118,9 +134,17 @@ class ParentRepository:
             )
         )
 
-        results = self.collection.search(
+        search_params = {
+            "metric_type": "COSINE",
+            "params": {
+                "ef": 64,
+            },
+        }
+
+        return self.collection.search(
             data=[query_embedding],
             anns_field="embedding",
+            param=search_params,
             limit=top_k,
             output_fields=[
                 "id",
@@ -128,5 +152,3 @@ class ParentRepository:
                 "payload",
             ],
         )
-
-        return results

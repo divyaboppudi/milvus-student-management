@@ -37,7 +37,26 @@ class ParentService:
         self,
         parent_id: str,
     ):
-        return self.repository.delete(parent_id)
+        parent_record = (
+            self.repository.get_by_id(
+                parent_id
+            )
+        )
+
+        if not parent_record:
+            return False
+
+        payload = parent_record["payload"]
+
+        parent = Parent(
+            **payload
+        )
+
+        parent.is_deleted = True
+
+        return self.repository.update(
+            parent
+        )
 
     def search_parents(
         self,

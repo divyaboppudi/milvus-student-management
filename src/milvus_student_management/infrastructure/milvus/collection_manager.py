@@ -5,8 +5,10 @@ from milvus_student_management.infrastructure.milvus.schema import (
 )
 
 from milvus_student_management.shared.constants import (
-    EDUCATION_ENTITIES_COLLECTION,
-    EDUCATION_RELATIONSHIPS_COLLECTION,
+    STUDENTS_COLLECTION,
+    TEACHERS_COLLECTION,
+    PARENTS_COLLECTION,
+    RELATIONSHIPS_COLLECTION,
 )
 
 
@@ -16,18 +18,34 @@ class CollectionManager:
     def create_collections():
 
         if not utility.has_collection(
-            EDUCATION_ENTITIES_COLLECTION
+            STUDENTS_COLLECTION
         ):
             Collection(
-                name=EDUCATION_ENTITIES_COLLECTION,
+                name=STUDENTS_COLLECTION,
                 schema=MilvusSchemas.entity_schema(),
             )
 
         if not utility.has_collection(
-            EDUCATION_RELATIONSHIPS_COLLECTION
+            TEACHERS_COLLECTION
         ):
             Collection(
-                name=EDUCATION_RELATIONSHIPS_COLLECTION,
+                name=TEACHERS_COLLECTION,
+                schema=MilvusSchemas.entity_schema(),
+            )
+
+        if not utility.has_collection(
+            PARENTS_COLLECTION
+        ):
+            Collection(
+                name=PARENTS_COLLECTION,
+                schema=MilvusSchemas.entity_schema(),
+            )
+
+        if not utility.has_collection(
+            RELATIONSHIPS_COLLECTION
+        ):
+            Collection(
+                name=RELATIONSHIPS_COLLECTION,
                 schema=MilvusSchemas.relationship_schema(),
             )
 
@@ -35,5 +53,17 @@ class CollectionManager:
     def load_collections():
 
         Collection(
-            EDUCATION_ENTITIES_COLLECTION
+            STUDENTS_COLLECTION
+        ).load()
+
+        Collection(
+            TEACHERS_COLLECTION
+        ).load()
+
+        Collection(
+            PARENTS_COLLECTION
+        ).load()
+
+        Collection(
+            RELATIONSHIPS_COLLECTION
         ).load()
