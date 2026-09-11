@@ -15,7 +15,10 @@ class StudentRepository:
         self.collection = Collection(
             STUDENTS_COLLECTION
         )
-        self.embedding_provider = EmbeddingProvider()
+
+        self.embedding_provider = (
+            EmbeddingProvider()
+        )
 
     def create(
         self,
@@ -68,7 +71,9 @@ class StudentRepository:
 
         return result[0]
 
-    def get_all(self):
+    def get_all(
+        self,
+    ):
 
         self.collection.load()
 
@@ -92,7 +97,7 @@ class StudentRepository:
 
             if not payload.get(
                 "is_deleted",
-                False
+                False,
             ):
                 active_students.append(
                     result
@@ -105,8 +110,13 @@ class StudentRepository:
         student: Student,
     ):
 
-        self.delete(student.id)
-        self.create(student)
+        self.delete(
+            student.id
+        )
+
+        self.create(
+            student
+        )
 
         return True
 
@@ -142,7 +152,7 @@ class StudentRepository:
             },
         }
 
-        return self.collection.search(
+        results = self.collection.search(
             data=[query_embedding],
             anns_field="embedding",
             param=search_params,
@@ -153,3 +163,35 @@ class StudentRepository:
                 "payload",
             ],
         )
+
+        filtered_results = []
+
+        for hits in results:
+
+            for hit in hits:
+
+                entity = hit.entity
+
+                payload = entity.get(
+                    "payload",
+                    {}
+                )
+
+                if payload.get(
+                    "is_deleted",
+                    False,
+                ):
+                    continue
+
+                if hit.distance < 0.20:
+                    continue
+
+                filtered_results.append(
+                    {
+                        "id": hit.id,
+                        "distance": hit.distance,
+                        "entity": entity,
+                    }
+                )
+
+        return filtered_results

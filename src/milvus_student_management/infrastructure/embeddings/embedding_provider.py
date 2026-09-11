@@ -1,13 +1,33 @@
+import requests
+
+
 class EmbeddingProvider:
 
     def __init__(self):
-        pass
+        self.model = (
+            "nomic-embed-text"
+        )
 
     def generate_embedding(
         self,
         text: str,
     ):
-        return [0.0] * 384
+
+        response = requests.post(
+            "http://localhost:11434/api/embeddings",
+            json={
+                "model": self.model,
+                "prompt": text,
+            },
+            timeout=60,
+        )
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        # Milvus collection expects 384 dimensions
+        return data["embedding"][:384]
 
     def create_student_text(
         self,

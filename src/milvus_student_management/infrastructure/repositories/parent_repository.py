@@ -141,7 +141,7 @@ class ParentRepository:
             },
         }
 
-        return self.collection.search(
+        results = self.collection.search(
             data=[query_embedding],
             anns_field="embedding",
             param=search_params,
@@ -152,3 +152,35 @@ class ParentRepository:
                 "payload",
             ],
         )
+
+        filtered_results = []
+
+        for hits in results:
+
+            for hit in hits:
+
+                entity = hit.entity
+
+                payload = entity.get(
+                    "payload",
+                    {}
+                )
+
+                if payload.get(
+                    "is_deleted",
+                    False,
+                ):
+                    continue
+
+                if hit.distance < 0.20:
+                    continue
+
+                filtered_results.append(
+                    {
+                        "id": hit.id,
+                        "distance": hit.distance,
+                        "entity": entity,
+                    }
+                )
+
+        return filtered_results
