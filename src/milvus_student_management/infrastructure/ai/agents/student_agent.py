@@ -35,10 +35,26 @@ class StudentAgent:
         self,
         student_id: str,
     ):
-
         return (
             self.student_tool.get_student(
                 student_id
+            )
+        )
+
+    def get_all_students(
+        self,
+    ):
+        return (
+            self.student_tool.get_all_students()
+        )
+
+    def search_students(
+        self,
+        query: str,
+    ):
+        return (
+            self.student_tool.search_students(
+                query
             )
         )
 

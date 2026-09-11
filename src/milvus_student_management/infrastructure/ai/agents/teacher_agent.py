@@ -15,9 +15,25 @@ class TeacherAgent:
         self,
         teacher_id: str,
     ):
-
         return (
             self.teacher_tool.get_teacher(
                 teacher_id
+            )
+        )
+
+    def get_all_teachers(
+        self,
+    ):
+        return (
+            self.teacher_tool.get_all_teachers()
+        )
+
+    def search_teachers(
+        self,
+        query: str,
+    ):
+        return (
+            self.teacher_tool.search_teachers(
+                query
             )
         )

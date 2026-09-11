@@ -6,19 +6,29 @@ from milvus_student_management.infrastructure.ai.providers.azure_provider import
     AzureProvider,
 )
 
+from milvus_student_management.infrastructure.ai.providers.ollama_provider import (
+    OllamaProvider,
+)
+
 
 class ProviderFactory:
 
     @staticmethod
     def create():
 
-        provider = (
-            Config.AI_PROVIDER.lower()
+        print(
+            "================================================"
         )
 
-        if provider == "azure":
-            return AzureProvider()
-
-        raise ValueError(
-            f"Unsupported provider: {provider}"
+        print(
+            f"AI Provider Selected: {Config.AI_PROVIDER}"
         )
+
+        print(
+            "================================================"
+        )
+
+        if Config.AI_PROVIDER == "ollama":
+            return OllamaProvider()
+
+        return AzureProvider()

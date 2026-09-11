@@ -5,6 +5,10 @@ from langgraph.graph import (
     StateGraph,
 )
 
+from milvus_student_management.application.services.ai_service import (
+    AIService,
+)
+
 
 class GraphState(
     TypedDict
@@ -19,15 +23,20 @@ class LangGraphService:
 
     def __init__(
         self,
+        ai_service: AIService,
         student_agent,
         teacher_agent,
         parent_agent,
         relationship_agent,
     ):
+        self.ai_service = ai_service
+
         self.student_agent = student_agent
         self.teacher_agent = teacher_agent
         self.parent_agent = parent_agent
-        self.relationship_agent = relationship_agent
+        self.relationship_agent = (
+            relationship_agent
+        )
 
         graph = StateGraph(
             GraphState
@@ -99,19 +108,69 @@ class LangGraphService:
         self,
         state,
     ):
-        parts = (
-            state["question"]
-            .split()
-        )
-
-        if len(parts) > 0:
-            state["entity_id"] = (
-                parts[-1]
-            )
-
         return state
 
     def route(
+        self,
+        state,
+    ):
+        return state["route"]
+
+    async def determine_route(
+        self,
+        question: str,
+    ):
+        prompt = f"""
+You are a classifier.
+
+Respond with ONLY ONE WORD.
+
+Allowed values:
+
+student
+teacher
+parent
+relationship
+unknown
+
+Do not explain.
+Do not write sentences.
+
+Question:
+{question}
+"""
+
+        response = await (
+            self.ai_service.generate_text(
+                prompt
+            )
+        )
+
+        response = (
+            response
+            .strip()
+            .lower()
+        )
+
+        print(
+            f"CLASSIFIER RESPONSE: {response}"
+        )
+
+        if response == "student":
+            return "student"
+
+        if response == "teacher":
+            return "teacher"
+
+        if response == "parent":
+            return "parent"
+
+        if response == "relationship":
+            return "relationship"
+
+        return "unknown"
+
+    def student_node(
         self,
         state,
     ):
@@ -120,26 +179,14 @@ class LangGraphService:
             .lower()
         )
 
-        if "student" in question:
-            return "student"
-
-        if "teacher" in question:
-            return "teacher"
-
-        if "parent" in question:
-            return "parent"
-
-        return "relationship"
-
-    def student_node(
-        self,
-        state,
-    ):
-        state["response"] = (
-            self.student_agent.get_student_details(
-                state["entity_id"]
+        if "all" in question:
+            state["response"] = (
+                self.student_agent.get_all_students()
             )
-        )
+        else:
+            state["response"] = (
+                "Please provide a student id."
+            )
 
         return state
 
@@ -147,11 +194,19 @@ class LangGraphService:
         self,
         state,
     ):
-        state["response"] = (
-            self.teacher_agent.get_teacher_details(
-                state["entity_id"]
-            )
+        question = (
+            state["question"]
+            .lower()
         )
+
+        if "all" in question:
+            state["response"] = (
+                self.teacher_agent.get_all_teachers()
+            )
+        else:
+            state["response"] = (
+                "Please provide a teacher id."
+            )
 
         return state
 
@@ -159,11 +214,19 @@ class LangGraphService:
         self,
         state,
     ):
-        state["response"] = (
-            self.parent_agent.get_parent_details(
-                state["entity_id"]
-            )
+        question = (
+            state["question"]
+            .lower()
         )
+
+        if "all" in question:
+            state["response"] = (
+                self.parent_agent.get_all_parents()
+            )
+        else:
+            state["response"] = (
+                "Please provide a parent id."
+            )
 
         return state
 
@@ -171,11 +234,19 @@ class LangGraphService:
         self,
         state,
     ):
-        state["response"] = (
-            self.relationship_agent.get_relationship_details(
-                state["entity_id"]
-            )
+        question = (
+            state["question"]
+            .lower()
         )
+
+        if "all" in question:
+            state["response"] = (
+                self.relationship_agent.get_all_relationships()
+            )
+        else:
+            state["response"] = (
+                "Please provide a relationship id."
+            )
 
         return state
 
@@ -183,10 +254,23 @@ class LangGraphService:
         self,
         question: str,
     ):
+        route = await (
+            self.determine_route(
+                question
+            )
+        )
+
+        if route == "unknown":
+            return {
+                "question": question,
+                "response":
+                "I can currently help only with students, teachers, parents and relationships."
+            }
+
         return self.graph.invoke(
             {
                 "question": question,
-                "route": "",
+                "route": route,
                 "entity_id": "",
                 "response": "",
             }

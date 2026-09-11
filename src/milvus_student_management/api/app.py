@@ -4,7 +4,9 @@ from fastapi import File
 from datetime import datetime
 from fastapi import FastAPI
 
-
+from fastapi.middleware.cors import (
+    CORSMiddleware,
+)
 from milvus_student_management.domain.entities.student import Student
 from milvus_student_management.domain.entities.teacher import Teacher
 
@@ -133,6 +135,15 @@ app = FastAPI(
     title="Milvus Student Management API",
     version="1.0.0",
 )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 MilvusConnection.connect()
 
@@ -211,6 +222,7 @@ agent_service = AgentService(
 )
 langgraph_service = (
     LangGraphService(
+        ai_service,
         student_agent,
         teacher_agent,
         parent_agent,
@@ -1248,6 +1260,21 @@ async def chat(
         response,
     }
 @app.get(
+    "/ai/test",
+    tags=["AI"],
+)
+async def test_ai():
+
+    response = await (
+        ai_service.generate_text(
+            "Say hello in one sentence."
+        )
+    )
+
+    return {
+        "response": response
+    }
+@app.get(
     "/ai/student-context/{student_id}",
     tags=["AI"],
 )
@@ -1402,6 +1429,7 @@ def upload_base64_file(
     }
 @app.post(
     "/langgraph/chat",
+    tags=["LangGraph"],
 )
 async def langgraph_chat(
     question: str,

@@ -15,9 +15,15 @@ class RelationshipAgent:
         self,
         relationship_id: str,
     ):
-
         return (
             self.relationship_tool.get_relationship(
                 relationship_id
             )
+        )
+
+    def get_all_relationships(
+        self,
+    ):
+        return (
+            self.relationship_tool.get_all_relationships()
         )
