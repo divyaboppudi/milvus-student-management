@@ -1,25 +1,13 @@
-from sentence_transformers import SentenceTransformer
-
-from milvus_student_management.shared.constants import (
-    EMBEDDING_MODEL,
-)
-
-
 class EmbeddingProvider:
 
     def __init__(self):
-        self._model = SentenceTransformer(
-            EMBEDDING_MODEL
-        )
+        pass
 
     def generate_embedding(
         self,
         text: str,
     ):
-        return self._model.encode(
-            text,
-            normalize_embeddings=True,
-        ).tolist()
+        return [0.0] * 384
 
     def create_student_text(
         self,

@@ -1,5 +1,9 @@
+import base64
+from fastapi import UploadFile
+from fastapi import File
 from datetime import datetime
 from fastapi import FastAPI
+
 
 from milvus_student_management.domain.entities.student import Student
 from milvus_student_management.domain.entities.teacher import Teacher
@@ -118,6 +122,13 @@ from milvus_student_management.infrastructure.ai.tools.teacher_tool import (
     TeacherTool,
 )
 
+from milvus_student_management.api.models.base64_file_request import (
+    Base64FileRequest,
+)
+
+from milvus_student_management.application.services.langgraph_service import (
+    LangGraphService,
+)
 app = FastAPI(
     title="Milvus Student Management API",
     version="1.0.0",
@@ -197,6 +208,14 @@ agent_service = AgentService(
     teacher_agent,
     parent_agent,
     relationship_agent,
+)
+langgraph_service = (
+    LangGraphService(
+        student_agent,
+        teacher_agent,
+        parent_agent,
+        relationship_agent,
+    )
 )
 
 @app.get(
@@ -1259,5 +1278,136 @@ def get_student_context(
     return (
         student_agent.get_student_context(
             student_id
+        )
+    )
+from fastapi import UploadFile
+
+
+@app.post(
+    "/files/upload",
+    tags=["Files"],
+)
+async def upload_file(
+    file: UploadFile,
+):
+
+    file_path = (
+        f"uploads/{file.filename}"
+    )
+
+    with open(
+        file_path,
+        "wb",
+    ) as buffer:
+
+        while True:
+
+            chunk = await file.read(
+                1024 * 1024
+            )
+
+            if not chunk:
+                break
+
+            buffer.write(
+                chunk
+            )
+
+    return {
+        "message":
+        "Upload successful",
+        "file_name":
+        file.filename,
+        "file_path":
+        file_path,
+    }
+@app.post(
+    "/images/upload",
+    tags=["Files"],
+)
+async def upload_image(
+    file: UploadFile,
+):
+
+    if not file.content_type.startswith(
+        "image/"
+    ):
+        return {
+            "message":
+            "Only image files allowed"
+        }
+
+    file_path = (
+        f"uploads/{file.filename}"
+    )
+
+    with open(
+        file_path,
+        "wb",
+    ) as buffer:
+
+        while True:
+
+            chunk = await file.read(
+                1024 * 1024
+            )
+
+            if not chunk:
+                break
+
+            buffer.write(
+                chunk
+            )
+
+    return {
+        "message":
+        "Image uploaded successfully",
+        "file_name":
+        file.filename,
+        "file_path":
+        file_path,
+    }
+@app.post(
+    "/files/upload-base64",
+    tags=["Files"],
+)
+def upload_base64_file(
+    request: Base64FileRequest,
+):
+
+    file_path = (
+        f"uploads/{request.file_name}"
+    )
+
+    file_bytes = (
+        base64.b64decode(
+            request.content
+        )
+    )
+
+    with open(
+        file_path,
+        "wb",
+    ) as file:
+
+        file.write(
+            file_bytes
+        )
+
+    return {
+        "message":
+        "File uploaded successfully",
+        "file_path":
+        file_path,
+    }
+@app.post(
+    "/langgraph/chat",
+)
+async def langgraph_chat(
+    question: str,
+):
+    return await (
+        langgraph_service.ask(
+            question
         )
     )
